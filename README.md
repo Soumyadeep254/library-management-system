@@ -1,4 +1,4 @@
-# library-management-systemThis Library Management Project 
+# library-management-system
 
 ---------------------------------------------------------------------------------------------------------------------------------
 
