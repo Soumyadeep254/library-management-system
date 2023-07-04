@@ -1,213 +1,172 @@
 import os
 
-#Important Component of Library Management
-if os.path.isfile("booklist.txt"):
-      pass
-else:
-      file = open("booklist.txt","a+")
 
-if os.path.isfile("lendlist.txt"):
-      pass
-else:
-      file = open("lendlist.txt","a+")
+class Library:
+    def __init__(self):
+        self.booklist_path = "booklist.txt"
+        self.lendlist_path = "lendlist.txt"
 
-#Library Management made by Akash khandelwal
-class Library():
+        if not os.path.isfile(self.booklist_path):
+            open(self.booklist_path, "a").close()
 
+        if not os.path.isfile(self.lendlist_path):
+            open(self.lendlist_path, "a").close()
 
-
-    def addbooks(self,bookname):
-       print("********************ADD BOOK SECTION*****************************************")
-       with open("booklist.txt") as op:
-           if bookname in op.read():
-                 print("Sorry this book is already in Library")
-           else:
-               with open("booklist.txt","a") as op:
-                     op.write(bookname+"\n")
-                     print("Book Added Successfully!!!!!!!!")
-
-    def displaybooks(self):
-
-         print("************************Book List***********************************")
-         if os.stat("booklist.txt").st_size == 0:
-              print("Here is No Data")
-         else:
-             list = []
-             with open("booklist.txt") as op:
-                for book in op:
-                     list.append(book)
-
-             for index,book in enumerate(list):
-                   print(index,": "+book)
-
-
-
-    def lendbooks(self,Personname,bookname):
-         d={}
-         with open("booklist.txt") as op:
-              if bookname in op.read():
-                   print("")
-                   with open("lendlist.txt") as f:
-                       if bookname in f.read():
-                           print(" ")
-                           with open("lendlist.txt") as op:
-                                for line in op:
-                                    (key,value) = line.split()
-                                    d[(key)] = value
-
-                                print("Sorry this book is lend by",d[bookname])
-
-                       else:
-                           with open("lendlist.txt","a") as op:
-                               op.write(bookname+" "+Personname+"\n")
-                               print("Book lend Successfully!!!")
-              else:
-                  print("Sorry this book is not available in Library")
-
-
-
-    def deletebooks(self,bookname):
-        if os.stat("booklist.txt").st_size == 0:
-            print("Library has no Books to delete")
-
-        else:
-            with open("booklist.txt") as op:
-                if bookname in op.read():
-                    print("")
-                    with open("lendlist.txt") as f:
-                        if bookname in f.read():
-                            print("this book is issued by someone it can not be deleted until return"+f.readline())
-
-                        else:
-                            print("Book Deleted Successfully")
-                            with open("booklist.txt") as op:
-                                data = op.readlines()
-
-                            with open("booklist.txt","w") as f:
-                                for line in data:
-                                    if line.strip("\n") != bookname:
-                                        f.write(line)
-
-
-
-                else:
-                     print("This book is not present in this library")
-
-    def lendlist(self):
-        if os.stat("lendlist.txt").st_size == 0:
-            print("No Book lend by any Person")
-        else:
-            print("*********************Lend List****************************")
-            with open("lendlist.txt") as op:
-                 for Person in op:
-                     print(Person)
-
-
-
-    def deleteAllbooks(self):
-        print("Are You Sure You Will lose all data regarding lendlist?(y/n)")
-        ch = input()
-        if ch.upper() == "Y":
-            if os.stat("booklist.txt").st_size != 0:
-                   print("All DATA has been Successfully Deleted")
-                   with open("booklist.txt","w") as op:
-                     op.seek(0)
-                     op.truncate()
-
-
-                   with open("lendlist.txt","w") as f:
-                      f.seek(0)
-                      f.truncate()
-
+    def add_books(self, bookname):
+        print("--------------- ADD BOOK SECTION ----------------------------")
+        with open(self.booklist_path, "r") as file:
+            if bookname.upper() in file.read():
+                print("Sorry, this book is already in the library")
             else:
-                 print("File has been Already Empty")
+                with open(self.booklist_path, "a") as file:
+                    file.write(f"{bookname}\n")
+                    print("Book added successfully!")
 
+    def display_books(self):
+        print("----------- Book List -------------")
+        if os.stat(self.booklist_path).st_size == 0:
+            print("There are no books in the library")
         else:
-             pass
+            with open(self.booklist_path, "r") as file:
+                for index, book in enumerate(file, 1):
+                    print(f"{index}: {book.rstrip()}")
 
-    def  returnbooks(self,Personname,bookname):
-           with open("booklist.txt") as op:
-               if bookname in op.read():
-                   print("")
-                   with open("lendlist.txt") as op:
-                         if bookname and Personname in op.read():
-                             print("")
-                             with open("lendlist.txt") as f:
-                               data = f.readlines()
-                             print("Your Book has Successfully Return")
-                             with open("lendlist.txt","w") as op:
-                                for line in data:
-                                 if line.strip("\n") != (bookname+" "+Personname):
-                                     op.write(line)
+    def lend_books(self, personname, bookname):
+        lendlist = self._load_lendlist()
+        if bookname.upper() in lendlist:
+            print(f"Sorry, the book '{bookname}' is already lent by {lendlist[bookname]}. "
+                  "It cannot be deleted until returned.")
+        else:
+            with open(self.lendlist_path, "a") as file:
+                file.write(f"{bookname} {personname}\n")
+            print("Book lent successfully!")
 
-                         else:
-                             print("This "+bookname+" book is not lend to "+Personname)
+    def delete_books(self, bookname):
+        with open(self.booklist_path, "r") as file:
+            if bookname.upper() in file.read():
+                lendlist = self._load_lendlist()
+                if bookname.upper() in lendlist:
+                    print(f"The book '{bookname}' is currently lent by {lendlist[bookname]}. "
+                          "It cannot be deleted until returned.")
+                else:
+                    with open(self.booklist_path, "r") as file:
+                        books = file.readlines()
 
-               else:
-                   print("You have Written Wrong book name")
+                    with open(self.booklist_path, "w") as file:
+                        for line in books:
+                            if line.rstrip("\n").upper() != bookname.upper():
+                                file.write(line)
+                    print("Book deleted successfully!")
+            else:
+                print("This book is not present in the library")
+
+    def lend_list(self):
+        print("--------------- Lend List -----------------")
+        lendlist = self._load_lendlist()
+        if len(lendlist) == 0:
+            print("No books are currently lent by any person")
+        else:
+            for book, person in lendlist.items():
+                print(f"{book} lent by {person}")
+
+    def delete_all_books(self):
+        print("Are you sure you want to delete all books and lending records? (y/n)")
+        choice = input()
+        if choice.lower() == "y":
+            if os.stat(self.booklist_path).st_size != 0:
+                open(self.booklist_path, "w").close()
+
+            if os.stat(self.lendlist_path).st_size != 0:
+                open(self.lendlist_path, "w").close()
+
+            print("All data has been successfully deleted")
+        else:
+            print("Operation canceled")
+
+    def return_books(self, personname, bookname):
+        lendlist = self._load_lendlist()
+        if bookname.upper() in lendlist and lendlist[bookname.upper()]:
+            with open(self.lendlist_path, "r") as file:
+                data = file.readlines()
+
+            with open(self.lendlist_path, "w") as file:
+                for line in data:
+                    if not line.startswith(f"{bookname} {personname}"):
+                        file.write(line)
+
+            print("Your book has been successfully returned")
+        else:
+            print(f"The book '{bookname}' is not currently lent to {personname}")
+
+    def _load_lendlist(self):
+        lendlist = {}
+        with open(self.lendlist_path, "r") as file:
+            for line in file:
+                book, person = line.strip().split(" ", 1)
+                lendlist[book.upper()] = person
+        return lendlist
+
+
 def main():
     print("Welcome to Library Management")
-    harry = Library()
+    library = Library()
     while True:
-        print("*****************************************************************************************************")
-        print("1.Add Books")
-        print("2.Display Books")
-        print("3.Lend Books")
-        print("4.Book lend list")
-        print("5.Return books")
-        print("6.Delete All books")
-        print("7.Delete Books")
-        print("8.Exit")
-        print("*****************************************************************************************************")
-        print("Enter Your Choice?")
+       
+        print("1. Add Books")
+        print("2. Display Books")
+        print("3. Lend Books")
+        print("4. Book Lend List")
+        print("5. Return Books")
+        print("6. Delete All Books")
+        print("7. Delete Books")
+        print("8. Exit")
+        print("------------------------")
+        print("Enter Your Choice:")
         try:
-           _input =int(input())
+            choice = int(input())
+        except ValueError:
+            print("Invalid input. Please enter a numerical choice.")
+            continue
 
-        except Exception as e:
-                print("You must be only enter numerical value!!")
+        if choice == 1:
+            print("Enter book name:")
+            bookname = input().strip()
+            library.add_books(bookname)
 
-        if _input == 1:
-              print("Enter book name:")
-              _input2 = input()
-              harry.addbooks(_input2.upper())
+        elif choice == 2:
+            library.display_books()
 
-        elif _input == 2:
-              harry.displaybooks()
+        elif choice == 3:
+            print("Enter Your name:")
+            personname = input().strip()
+            print("Enter book name:")
+            bookname = input().strip()
+            library.lend_books(personname, bookname)
 
+        elif choice == 4:
+            library.lend_list()
 
-        elif _input == 3:
-               print("Enter Your name:")
-               _input3 = input()
-               print("Enter book name:")
-               _input4 = input()
-               harry.lendbooks(_input3.upper(),_input4.upper())
+        elif choice == 5:
+            print("Enter Your name:")
+            personname = input().strip()
+            print("Enter book name:")
+            bookname = input().strip()
+            library.return_books(personname, bookname)
 
-        elif _input == 4:
-              harry.lendlist()
+        elif choice == 6:
+            library.delete_all_books()
 
+        elif choice == 7:
+            print("Enter Book name:")
+            bookname = input().strip()
+            library.delete_books(bookname)
 
-        elif _input == 5:
-              print("Enter Your name:")
-              _input5 = input()
-              print("Enter book name:")
-              _input6 = input()
-              harry.returnbooks(_input5.upper(),_input6.upper())
-
-
-        elif _input == 6:
-               harry.deleteAllbooks()
-
-        elif _input ==  7:
-                print("Enter Book name")
-                _input7 = input()
-                harry.deletebooks(_input7.upper())
-
-        elif _input == 8:
+        elif choice == 8:
             exit()
 
-
         else:
-            print("Invalid Input")
+            print("Invalid choice. Please enter a valid choice.")
+
 
 if __name__ == '__main__':
-            main()
+    main()
